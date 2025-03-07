@@ -4,7 +4,8 @@ import com.ll.hereispaw.domain.search.search.document.PostDocument;
 import com.ll.hereispaw.global.config.MeilisearchConfig;
 import com.ll.hereispaw.standard.Ut.Ut;
 import com.meilisearch.sdk.Index;
-import com.meilisearch.sdk.model.SearchResult;
+import com.meilisearch.sdk.SearchRequest;
+import com.meilisearch.sdk.model.Searchable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -35,8 +36,8 @@ public class PostDocumentRepositoryImpl implements PostDocumentRepository {
     }
 
     @Override
-    public SearchResult search(String indexName, String kw) {
-        return getIndex(indexName).search(kw);
+    public Searchable search(String indexName, SearchRequest searchRequest) {
+        return getIndex(indexName).search(searchRequest);
     }
 
 }

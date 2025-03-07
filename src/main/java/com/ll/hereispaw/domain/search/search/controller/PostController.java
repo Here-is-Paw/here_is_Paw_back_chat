@@ -3,9 +3,10 @@ package com.ll.hereispaw.domain.search.search.controller;
 import com.ll.hereispaw.domain.search.search.document.PostDocument;
 import com.ll.hereispaw.domain.search.search.service.PostDocumentService;
 import com.ll.hereispaw.global.globalDto.GlobalResponse;
-import com.meilisearch.sdk.model.SearchResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,10 +26,18 @@ public class PostController {
     }
 
     @GetMapping
-    public GlobalResponse<SearchResult> search(@RequestParam("kw") String kw) {
-        SearchResult result = postDocumentService.typeAllSearch(kw);
-
-        return GlobalResponse.success(result);
+    public GlobalResponse<?> search(
+            @RequestParam("kw") String keyword,
+            @PageableDefault(size = 10) Pageable pageable) {
+//        Page
+//                <Item>
+        return GlobalResponse.success(postDocumentService.typeAllSearch(keyword, pageable));
     }
+//    @GetMapping
+//    public GlobalResponse<SearchResult> search(@RequestParam("kw") String kw) {
+//        SearchResult result = postDocumentService.typeAllSearch(kw);
+//
+//        return GlobalResponse.success(result);
+//    }
 
 }

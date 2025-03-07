@@ -1,7 +1,8 @@
 package com.ll.hereispaw.domain.search.search.repository;
 
 import com.ll.hereispaw.domain.search.search.document.PostDocument;
-import com.meilisearch.sdk.model.SearchResult;
+import com.meilisearch.sdk.SearchRequest;
+import com.meilisearch.sdk.model.Searchable;
 
 
 public interface PostDocumentRepository {
@@ -10,5 +11,5 @@ public interface PostDocumentRepository {
 
     void clear(String indexName);
 
-    SearchResult search(String indexName, String kw);
+    Searchable search(String indexName, SearchRequest searchRequest);
 }

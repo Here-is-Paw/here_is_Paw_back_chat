@@ -102,7 +102,7 @@ public class MissingService {
                 .build();
         kafkaTemplate.send("dog-face-request", dogFaceRequestDto);
 
-        kafkaTemplate.send("create-post", new CreatePostEventDto(missing, PostState.CREATE.getCode()));
+        kafkaTemplate.send("meiliesearch", new CreatePostEventDto(missing, PostState.CREATE.getCode()));
 
 //        s3Upload(missing, file);
         return new MissingResponseDto(missing);

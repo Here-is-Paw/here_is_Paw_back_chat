@@ -2,7 +2,7 @@ package com.ll.hereispaw.domain.search.search.eventListener;
 
 import com.ll.hereispaw.domain.search.search.document.IndexName;
 import com.ll.hereispaw.domain.search.search.document.PostDocument;
-import com.ll.hereispaw.domain.search.search.dto.PostEventDto;
+import com.ll.hereispaw.domain.search.search.dto.request.PostEventDto;
 import com.ll.hereispaw.domain.search.search.service.PostDocumentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

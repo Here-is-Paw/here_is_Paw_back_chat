@@ -1,4 +1,4 @@
-package com.ll.hereispaw.domain.search.search.dto;
+package com.ll.hereispaw.domain.search.search.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -6,9 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 @Data
-@NoArgsConstructor  // 기본 생성자 추가
-@AllArgsConstructor // 모든 필드가 있는 생성자 추가 (필수는 아님)
-public class PostEventDto {
+@AllArgsConstructor
+@NoArgsConstructor
+public class SearchPostResponseDto {
     @NonNull
     private String id;
 
@@ -22,7 +22,5 @@ public class PostEventDto {
 
     private int type; // 0 = 실종 1 = 발견
 
-    private String name;
-
-    private int state;
+    private String etc;
 }

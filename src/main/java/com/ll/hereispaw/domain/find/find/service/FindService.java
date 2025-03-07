@@ -106,7 +106,7 @@ public class FindService {
         kafkaTemplate.send("dog-face-request", dogFaceRequestDto);
 
 
-        kafkaTemplate.send("create-post", new CreatePostEventDto(savedPost, PostState.CREATE.getCode()));
+        kafkaTemplate.send("meiliesearch", new CreatePostEventDto(savedPost, PostState.CREATE.getCode()));
 
         return savedPost.getId(); // 저장된 find_post_id 반환
     }

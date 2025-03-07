@@ -28,6 +28,8 @@ public class CreatePostEventDto {
 
     private String name;
 
+    private String etc;
+
     private int state;
 
     public CreatePostEventDto(Object post, int state) {
@@ -48,6 +50,8 @@ public class CreatePostEventDto {
         this.breed = post.getBreed();
         this.location = post.getLocation();
         this.type = PostType.FIND.getCode();
+        this.etc = post.getEtc();
+        this.state = state;
 //        this.createDate = LocalDateTime.now();
     }
 
@@ -59,6 +63,8 @@ public class CreatePostEventDto {
         this.breed = post.getBreed();
         this.location = post.getLocation();
         this.type = PostType.MISSING.getCode();
+        this.etc = post.getEtc();
+        this.state = state;
 //        this.createDate = LocalDateTime.now();
     }
 }

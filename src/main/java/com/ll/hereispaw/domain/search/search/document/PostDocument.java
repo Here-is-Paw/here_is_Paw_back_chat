@@ -1,6 +1,6 @@
 package com.ll.hereispaw.domain.search.search.document;
 
-import com.ll.hereispaw.domain.search.search.dto.PostEventDto;
+import com.ll.hereispaw.domain.search.search.dto.request.PostEventDto;
 import lombok.Data;
 import lombok.NonNull;
 
@@ -19,7 +19,7 @@ public class PostDocument{
 
     private int type; // 0 = 실종 1 = 발견
 
-    private String name;
+    private String etc;
 
     public PostDocument(PostEventDto postEventDto) {
         this.id = postEventDto.getId();
@@ -27,6 +27,6 @@ public class PostDocument{
         this.breed = postEventDto.getBreed();
         this.location = postEventDto.getLocation();
         this.type = postEventDto.getType();
-        this.name = postEventDto.getName();
+        this.etc = postEventDto.getEtc();
     }
 }
