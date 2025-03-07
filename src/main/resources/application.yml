@@ -31,8 +31,8 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me    # 사용자 정보 조회 URI
             user-name-attribute: id    # 사용자 정보에서 사용자 이름에 해당하는 속성
   kafka:
-    bootstrap-servers: 43.203.223.85:19092
-#    bootstrap-servers: localhost:19092
+#    bootstrap-servers: 43.203.223.85:19092
+    bootstrap-servers: localhost:19092
     producer:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:

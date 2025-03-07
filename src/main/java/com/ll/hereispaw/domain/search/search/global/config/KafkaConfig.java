@@ -1,6 +1,6 @@
 package com.ll.hereispaw.domain.search.search.global.config;
 
-import com.ll.hereispaw.domain.search.search.dto.PostEventDto;
+import com.ll.hereispaw.domain.search.search.dto.request.PostEventDto;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +30,7 @@ public class KafkaConfig {
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         JsonDeserializer<PostEventDto> jsonDeserializer = new JsonDeserializer<>(PostEventDto.class);
-        jsonDeserializer.addTrustedPackages("com.ll.hereispaw.domain.search.search.document");
+        jsonDeserializer.addTrustedPackages("com.ll.hereispaw.domain.search.search.dto");
 
         // 헤더에 상대가 보낸 클래스값이 자동 포함됨. ex. A객체(id, username, nickname)
         // typeHeaders(ture)의 경우 이 클래스 값을 받아 자동으로 매핑함.
