@@ -1,12 +1,15 @@
 package com.ll.hereispaw.domain.missing.missing.service;
 
+import com.ll.hereispaw.domain.find.find.dto.DogFaceRequestDto;
+import com.ll.hereispaw.domain.member.member.entity.Member;
 import com.ll.hereispaw.domain.missing.Auhtor.entity.Author;
 import com.ll.hereispaw.domain.missing.Auhtor.repository.AuthorRepository;
 import com.ll.hereispaw.domain.missing.missing.dto.request.MissingRequestDTO;
+import com.ll.hereispaw.domain.missing.missing.dto.response.CreatePostEventDto;
 import com.ll.hereispaw.domain.missing.missing.dto.response.MissingResponseDto;
 import com.ll.hereispaw.domain.missing.missing.entity.Missing;
 import com.ll.hereispaw.domain.missing.missing.repository.MissingRepository;
-import com.ll.hereispaw.domain.member.member.entity.Member;
+import com.ll.hereispaw.domain.search.search.document.PostState;
 import com.ll.hereispaw.global.error.ErrorCode;
 import com.ll.hereispaw.global.exception.CustomException;
 import com.ll.hereispaw.standard.Ut.GeoUt;
@@ -15,11 +18,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,6 +39,8 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 @Tag(name = " 실종 신고 API", description = "Missing")
 public class MissingService {
+    private static String POST_TYPE = "missing";
+
     @Value("${custom.bucket.name}")
     private String bucketName;
 
@@ -55,6 +57,8 @@ public class MissingService {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Transactional
     public MissingResponseDto write(Author author, MissingRequestDTO missingRequestDto) {
@@ -87,6 +91,18 @@ public class MissingService {
                         .author(author)
                         .build()
         );
+
+        //카프카 메시지 발행
+        DogFaceRequestDto dogFaceRequestDto = DogFaceRequestDto.builder()
+                .type("save")
+                .image(missing.getPathUrl())
+                .postType(POST_TYPE)
+                .postId(missing.getId())
+                .postMemberId(missing.getAuthor().getId())
+                .build();
+        kafkaTemplate.send("dog-face-request", dogFaceRequestDto);
+
+        kafkaTemplate.send("meiliesearch", new CreatePostEventDto(missing, PostState.CREATE.getCode()));
 
 //        s3Upload(missing, file);
         return new MissingResponseDto(missing);

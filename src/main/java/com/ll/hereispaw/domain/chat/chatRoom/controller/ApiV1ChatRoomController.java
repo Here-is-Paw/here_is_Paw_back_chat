@@ -52,6 +52,13 @@ public class ApiV1ChatRoomController {
         }
         return GlobalResponse.success(chatRoomDtos);
     }
+    
+    //안 읽은 메시지 수가 포함된 채팅방 목록
+    @GetMapping("/list-with-unread")
+    public GlobalResponse<List<ChatRoomDto>> roomListWithUnreadCount(@LoginUser Member chatUser) {
+        List<ChatRoomDto> chatRoomDtos = chatRoomService.roomListWithUnreadCount(chatUser);
+        return GlobalResponse.success(chatRoomDtos);
+    }
 
 //    //채팅방 입장
 //    @GetMapping("/{roomId}")
@@ -60,8 +67,6 @@ public class ApiV1ChatRoomController {
 //        ChatRoomDto chatRoomDto = new ChatRoomDto(chatRoom);
 //        return GlobalResponse.success(chatRoomDto);
 //    }
-
-
 
 
     //채팅방나가기

@@ -93,6 +93,9 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     testImplementation("org.springframework.kafka:spring-kafka-test")
 
+    // meiliesearch
+    implementation("com.meilisearch.sdk:meilisearch-java:0.14.2")
+
     //docker-compose
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 

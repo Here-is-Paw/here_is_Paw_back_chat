@@ -1,8 +1,8 @@
 package com.ll.hereispaw.domain.missing.missing.dto.response;
 
 import com.ll.hereispaw.domain.missing.missing.entity.Missing;
-import lombok.*;
-import org.locationtech.jts.geom.Point;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -21,6 +21,7 @@ public class MissingResponseDto {
     private String geo;
     private String location;
     private String pathUrl;
+    private Long   authorId;
     private String nickname;
 
     private String color;
@@ -37,6 +38,7 @@ public class MissingResponseDto {
         id = missing.getId();
         nickname = missing.getAuthor().getNickname();
         pathUrl = missing.getPathUrl();
+        authorId = missing.getAuthor().getId();
 
         name = missing.getName();
         breed = missing.getBreed();

@@ -32,6 +32,7 @@ public class InitData {
     private final MemberService memberService;
     private final MissingService missingService;
     private final MissingRepository missingRepository;
+
     GeometryFactory geometryFactory = new GeometryFactory();
 
     @Bean

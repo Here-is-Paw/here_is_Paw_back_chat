@@ -1,11 +1,14 @@
 package com.ll.hereispaw.domain.chat.chatMessage.dto;
 
 import com.ll.hereispaw.domain.chat.chatMessage.entity.ChatMessage;
+import com.ll.hereispaw.domain.member.member.entity.Member;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 public class ChatMessageDto {
 
     private Long chatMessageId;
@@ -14,12 +17,11 @@ public class ChatMessageDto {
     private LocalDateTime modifiedDate;
     private Long memberId;
     private String memberNickname;
-
-
     private String content;
+    private boolean isChatUserRead;
+    private boolean isTargetUserRead;
 
     public ChatMessageDto(ChatMessage chatMessage){
-
         this.chatMessageId      = chatMessage.getId();
         this.chatRoomId         = chatMessage.getChatRoom().getId();
         this.content            = chatMessage.getContent();
@@ -35,7 +37,7 @@ public class ChatMessageDto {
         //chatMessage를 통해서 따로 하나씩 호출하는 방식
         this.memberId = chatMessage.getMember().getId();
         this.memberNickname = chatMessage.getMember().getNickname();
-
-
+        this.isChatUserRead = chatMessage.isChatUserRead();
+        this.isTargetUserRead = chatMessage.isTargetUserRead();
     }
 }
