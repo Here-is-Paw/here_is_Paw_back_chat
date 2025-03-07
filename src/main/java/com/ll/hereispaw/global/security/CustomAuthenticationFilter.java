@@ -92,6 +92,8 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
                         "/api/v1/profile/**",
                         "/swagger-ui/index.html",
                         "/api/v1/chat/**"
+//                        "/api/v1/missings"
+//                        "/api/v1/members/login"
                 ).contains(request.getRequestURI())) {
             filterChain.doFilter(request, response);
             return;

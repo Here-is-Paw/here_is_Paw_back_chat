@@ -2,6 +2,7 @@ package com.ll.hereispaw.domain.member.member.controller;
 
 import com.ll.hereispaw.domain.member.member.dto.request.LoginRequest;
 import com.ll.hereispaw.domain.member.member.dto.request.ModifyRequest;
+import com.ll.hereispaw.domain.member.member.dto.request.RadiusRequest;
 import com.ll.hereispaw.domain.member.member.dto.request.SignupRequest;
 import com.ll.hereispaw.domain.member.member.dto.response.LoginResponse;
 import com.ll.hereispaw.domain.member.member.dto.response.MemberInfoDto;
@@ -57,9 +58,11 @@ public class ApiV1MemberController {
         return GlobalResponse.success(loginUser);
     }
 
-    @PatchMapping("/radius-update")
-    public GlobalResponse<String> radius_update(@LoginUser Member loginUser, Integer radius) {
-        memberService.radius_update(loginUser, radius);
+    @PatchMapping("/radius")
+    public GlobalResponse<String> radius_update(@LoginUser Member loginUser, @Valid @RequestBody RadiusRequest radiusRequest) {
+        log.debug("radius : {}", radiusRequest.radius());
+
+        memberService.radius_update(loginUser, radiusRequest.radius());
         return GlobalResponse.success("로케이션 업데이트");
     }
 

@@ -145,7 +145,7 @@ public class MemberService {
 
     @Transactional
     public MemberInfoDto modify(Member loginUser, ModifyRequest modifyRequest) {
-        Member member = memberRepository.findByUsername(modifyRequest.username()).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+        Member member = memberRepository.findById(modifyRequest.id()).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
         if (!loginUser.getUsername().equals(member.getUsername())) {
             throw new CustomException(ErrorCode.SC_FORBIDDEN);
@@ -198,7 +198,7 @@ public class MemberService {
     }
 
     @Transactional
-    public void radius_update(Member loginUser, Integer radius) {
+    public void radius_update(Member loginUser, Double radius) {
         Member user = memberRepository.findById(loginUser.getId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 

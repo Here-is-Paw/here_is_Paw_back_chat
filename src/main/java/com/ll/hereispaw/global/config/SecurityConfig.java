@@ -53,12 +53,12 @@ public class SecurityConfig {
                         authorizeRequests
                                 .requestMatchers("/h2-console/**").permitAll()
                                 .requestMatchers("/swagger-ui/index.html").permitAll()
-                                .requestMatchers("/h2-console/**").permitAll()
                                 //.requestMatchers("/api/v1/chat/**").permitAll()
                                 .requestMatchers("/api/v1/members/me").permitAll()
                                 .requestMatchers("/api/v1/members/signup").permitAll()
                                 .requestMatchers("/api/v1/members/login").permitAll()
                                 .requestMatchers("/api/v1/members/logout").permitAll()
+//                                .requestMatchers("/api/v1/missings").permitAll()
                                 .requestMatchers("/api/*/**")
                                 .authenticated()
                                 .anyRequest()

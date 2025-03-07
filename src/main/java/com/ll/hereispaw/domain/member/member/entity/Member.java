@@ -59,7 +59,7 @@ public class Member extends BaseEntity {
 
     private String avatar;
 
-    private Integer radius;
+    private Double radius;
 
     public boolean isAdmin() {
         return "admin".startsWith(username);
