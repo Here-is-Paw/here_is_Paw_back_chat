@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>채팅 테스트</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div>
+        <h2>채팅 테스트</h2>
+        <div>
+            <input type="text" id="userId" placeholder="사용자 ID" value="user123">
+            <input type="text" id="recipientId" placeholder="수신자 ID" value="user456">
+            <button id="connect">연결</button>
+            <button id="disconnect" disabled>연결 해제</button>
+        </div>
+        <br>
+        <div>
+            <button id="createRoom">채팅방 생성</button>
+            <button id="getRooms">채팅방 목록</button>
+        </div>
+        <br>
+        <div>
+            <input type="text" id="roomId" placeholder="채팅방 ID" style="width:300px;">
+            <button id="getMessages">메시지 가져오기</button>
+        </div>
+        <br>
+        <div>
+            <input type="text" id="messageInput" placeholder="메시지 입력" style="width:300px;" disabled>
+            <button id="sendMessage" disabled>전송</button>
+        </div>
+        <br>
+        <div>
+            <h3>채팅방 목록:</h3>
+            <pre id="roomsList"></pre>
+            <h3>메시지:</h3>
+            <div id="messages"></div>
+        </div>
+    </div>
+
+    <script>
+        let stompClient = null;
+        let selectedRoomId = null;
+
+        $('#connect').click(function() {
+            const userId = $('#userId').val();
+            if (!userId) {
+                alert('사용자 ID를 입력하세요');
+                return;
+            }
+
+            const socket = new SockJS('http://localhost:8095/ws');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function(frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/user/' + userId + '/queue/messages', function(message) {
+                    showMessage(JSON.parse(message.body));
+                });
+                
+                $('#connect').prop('disabled', true);
+                $('#disconnect').prop('disabled', false);
+                $('#messageInput').prop('disabled', false);
+                $('#sendMessage').prop('disabled', false);
+            });
+        });
+
+        $('#disconnect').click(function() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+                stompClient = null;
+            }
+            $('#connect').prop('disabled', false);
+            $('#disconnect').prop('disabled', true);
+            $('#messageInput').prop('disabled', true);
+            $('#sendMessage').prop('disabled', true);
+        });
+
+        $('#createRoom').click(function() {
+            const user1Id = $('#userId').val();
+            const user2Id = $('#recipientId').val();
+            
+            $.ajax({
+                url: 'http://localhost:8095/api/v1/chatRooms',
+                type: 'POST',
+                data: { 
+                    user1Id: user1Id,
+                    user2Id: user2Id
+                },
+                success: function(response) {
+                    console.log('채팅방 생성:', response);
+                    $('#roomId').val(response.id);
+                    selectedRoomId = response.id;
+                    alert('채팅방이 생성되었습니다: ' + response.id);
+                },
+                error: function(xhr, status, error) {
+                    console.error('채팅방 생성 실패:', error);
+                    alert('채팅방 생성 실패: ' + error);
+                }
+            });
+        });
+
+        $('#getRooms').click(function() {
+            const userId = $('#userId').val();
+            
+            $.ajax({
+                url: 'http://localhost:8095/api/v1/chatRooms/' + userId,
+                type: 'GET',
+                success: function(response) {
+                    console.log('채팅방 목록:', response);
+                    $('#roomsList').text(JSON.stringify(response, null, 2));
+                },
+                error: function(xhr, status, error) {
+                    console.error('채팅방 목록 가져오기 실패:', error);
+                    alert('채팅방 목록 가져오기 실패: ' + error);
+                }
+            });
+        });
+
+        $('#getMessages').click(function() {
+            const roomId = $('#roomId').val();
+            if (!roomId) {
+                alert('채팅방 ID를 입력하세요');
+                return;
+            }
+            
+            selectedRoomId = roomId;
+            
+            $.ajax({
+                url: 'http://localhost:8095/api/v1/chat/' + roomId + '/messages',
+                type: 'GET',
+                success: function(response) {
+                    console.log('메시지 목록:', response);
+                    $('#messages').empty();
+                    response.forEach(function(msg) {
+                        showMessage(msg);
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('메시지 가져오기 실패:', error);
+                    alert('메시지 가져오기 실패: ' + error);
+                }
+            });
+
+            // 메시지 읽음 처리
+            $.ajax({
+                url: 'http://localhost:8095/api/v1/chat/' + roomId + '/mark-read',
+                type: 'PUT',
+                data: { userId: $('#userId').val() },
+                success: function() {
+                    console.log('메시지 읽음 처리 완료');
+                }
+            });
+        });
+
+        $('#sendMessage').click(function() {
+            const messageContent = $('#messageInput').val();
+            if (!messageContent) {
+                alert('메시지를 입력하세요');
+                return;
+            }
+            
+            if (!selectedRoomId) {
+                alert('채팅방을 선택하세요');
+                return;
+            }
+            
+            const message = {
+                roomId: selectedRoomId,
+                senderId: $('#userId').val(),
+                recipientId: $('#recipientId').val(),
+                content: messageContent,
+                timestamp: new Date()
+            };
+            
+            stompClient.send("http://localhost:8095/app/chat", {}, JSON.stringify(message));
+            $('#messageInput').val('');
+        });
+
+        function showMessage(message) {
+            const messageElement = document.createElement('div');
+            const isSent = message.senderId === $('#userId').val();
+            messageElement.style.textAlign = isSent ? 'right' : 'left';
+            messageElement.style.backgroundColor = isSent ? '#dcf8c6' : '#f1f0f0';
+            messageElement.style.borderRadius = '5px';
+            messageElement.style.padding = '8px';
+            messageElement.style.margin = '5px';
+            
+            const date = new Date(message.timestamp);
+            const formattedTime = date.getHours().toString().padStart(2, '0') + ':' + 
+                                 date.getMinutes().toString().padStart(2, '0');
+            
+            messageElement.innerHTML = `
+                <div><strong>${message.senderId}</strong>: ${message.content}</div>
+                <small style="color:gray">${formattedTime}</small>
+            `;
+            
+            $('#messages').append(messageElement);
+        }
+    </script>
+</body>
+</html>
