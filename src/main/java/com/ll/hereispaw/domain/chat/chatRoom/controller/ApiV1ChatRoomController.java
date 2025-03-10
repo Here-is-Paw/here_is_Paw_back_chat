@@ -7,10 +7,14 @@ import com.ll.hereispaw.domain.chat.chatRoom.service.ChatRoomService;
 import com.ll.hereispaw.domain.member.member.entity.Member;
 import com.ll.hereispaw.global.globalDto.GlobalResponse;
 import com.ll.hereispaw.global.webMvc.LoginUser;
+import com.ll.hereispaw.global.webSocket.SseEmitters;
+import com.ll.hereispaw.global.webSocket.Ut;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +26,7 @@ public class ApiV1ChatRoomController {
 
     private final ChatRoomService chatRoomService;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final SseEmitters sseEmitters;
 
     @Getter
     public static class requestDto {
@@ -36,6 +41,11 @@ public class ApiV1ChatRoomController {
         simpMessagingTemplate.convertAndSend("/topic/api/v1/chat/new-room", chatRoomDto);
         //실시간 채팅방 마지막 메세지
         simpMessagingTemplate.convertAndSend("/topic/api/v1/chat/" + chatRoom.getId() + "/messages", chatRoomDto);
+        
+        // SSE로 채팅방 생성 알림 전송 (양쪽 사용자 모두에게)
+        notifyUnreadMessages(chatUser);
+        notifyUnreadMessages(chatRoom.getTargetUser()); // targetUser에게도 알림 전송
+        
         return GlobalResponse.success(chatRoomDto);
     }
 
@@ -52,17 +62,30 @@ public class ApiV1ChatRoomController {
         }
         return GlobalResponse.success(chatRoomDtos);
     }
-
-//    //채팅방 입장
-//    @GetMapping("/{roomId}")
-//    public GlobalResponse<ChatRoomDto> viewRoom(@PathVariable("roomId")Long roomId){
-//        ChatRoom chatRoom = this.chatRoomService.viewRoom(roomId);
-//        ChatRoomDto chatRoomDto = new ChatRoomDto(chatRoom);
-//        return GlobalResponse.success(chatRoomDto);
-//    }
-
-
-
+    
+    //안 읽은 메시지 수가 포함된 채팅방 목록
+    @GetMapping("/list-with-unread")
+    public GlobalResponse<List<ChatRoomDto>> roomListWithUnreadCount(@LoginUser Member chatUser) {
+        List<ChatRoomDto> chatRoomDtos = chatRoomService.roomListWithUnreadCount(chatUser);
+        return GlobalResponse.success(chatRoomDtos);
+    }
+    
+    // SSE 연결 엔드포인트
+    @GetMapping(value = "/sse/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter connect() {
+        return sseEmitters.add(new SseEmitter(60 * 1000L * 60)); // 60분 유지
+    }
+    
+    // 안 읽은 메시지 상태 업데이트를 위한 SSE 알림 메서드
+    private void notifyUnreadMessages(Member member) {
+        List<ChatRoomDto> chatRoomDtos = chatRoomService.roomListWithUnreadCount(member);
+        
+        // 현재 로그인한 사용자의 ID를 포함하여 모든 연결된 클라이언트에게 알림
+        sseEmitters.noti("unreadMessages", Ut.mapOf(
+            "userId", member.getId(),
+            "chatRooms", chatRoomDtos
+        ));
+    }
 
     //채팅방나가기
     @PostMapping("/{roomId}/leave")

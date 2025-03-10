@@ -1,5 +1,8 @@
 package com.ll.hereispaw.domain.chat.chatRoom.service;
 
+import com.ll.hereispaw.domain.chat.chatMessage.entity.ChatMessage;
+import com.ll.hereispaw.domain.chat.chatMessage.repository.ChatMessageRepository;
+import com.ll.hereispaw.domain.chat.chatRoom.dto.ChatRoomDto;
 import com.ll.hereispaw.domain.chat.chatRoom.entity.ChatRoom;
 import com.ll.hereispaw.domain.chat.chatRoom.repository.ChatRoomRepository;
 import com.ll.hereispaw.domain.member.member.entity.Member;
@@ -11,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +22,7 @@ public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final MemberRepository memberRepository;
+    private final ChatMessageRepository chatMessageRepository;
 
     //채팅방 생성
     public ChatRoom createRoom(Member chatUser,Long targetUserId){
@@ -72,6 +77,26 @@ public class ChatRoomService {
             // 채팅방이 없거나 roomState가 3인 경우 새 채팅방 생성
             return createRoom(chatUser, targetUserId);
         }
+    }
+
+    //안 읽은 메시지 수를 포함한 채팅방 목록 조회
+    public List<ChatRoomDto> roomListWithUnreadCount(Member member) {
+        List<ChatRoom> chatRooms = roomList(member);
+        
+        return chatRooms.stream()
+                .map(chatRoom -> {
+                    long unreadCount = countUnreadMessages(chatRoom, member);
+                    return new ChatRoomDto(chatRoom, member, unreadCount);
+                })
+                .collect(Collectors.toList());
+    }
+
+    //특정 채팅방의 안 읽은 메시지 개수 계산
+    private long countUnreadMessages(ChatRoom chatRoom, Member member) {
+        // 채팅방에서 현재 사용자가 수신자인 메시지 중 읽지 않은 메시지 수 반환
+        return chatRoom.getChatMessages().stream()
+                .filter(msg -> !msg.getMember().equals(member) && !msg.isReadByMember(member))
+                .count();
     }
 
     //참여된 채팅방 목록 조회
