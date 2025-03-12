@@ -2,7 +2,6 @@ package com.ll.hereispaw.domain.chat.chatMessage.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.ll.hereispaw.domain.chat.chatRoom.entity.ChatRoom;
-import com.ll.hereispaw.domain.member.member.entity.Member;
 import com.ll.hereispaw.global.jpa.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
@@ -24,9 +23,9 @@ public class ChatMessage extends BaseEntity {
     @ManyToOne
     private ChatRoom chatRoom;
 
-    @JsonBackReference
-    @ManyToOne
-    private Member member;
+    private Long memberId;
+    private String memberNickname;
+    private String memberUrl;
 
     private String content;
     
@@ -35,17 +34,17 @@ public class ChatMessage extends BaseEntity {
     private boolean isTargetUserRead = false;  // targetUser가 메시지를 읽었는지 여부
     
     // 메시지를 읽은 사용자인지 확인하는 메서드
-    public boolean isReadByMember(Member reader) {
+    public boolean isReadByMember(Long readerId) {
         ChatRoom room = this.getChatRoom();
-        boolean isChatUser = reader.equals(room.getChatUser());
+        boolean isChatUser = readerId.equals(room.getChatUserId());
         
         return isChatUser ? this.isChatUserRead : this.isTargetUserRead;
     }
     
     // 메시지를 읽음으로 표시하는 메서드
-    public void markAsReadByMember(Member reader) {
+    public void markAsReadByMember(Long readerId) {
         ChatRoom room = this.getChatRoom();
-        boolean isChatUser = reader.equals(room.getChatUser());
+        boolean isChatUser = readerId.equals(room.getChatUserId());
         
         if (isChatUser) {
             this.isChatUserRead = true;

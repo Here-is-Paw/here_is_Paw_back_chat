@@ -1,12 +1,11 @@
 package com.ll.hereispaw.domain.chat.chatRoom.service;
 
-import com.ll.hereispaw.domain.chat.chatMessage.entity.ChatMessage;
 import com.ll.hereispaw.domain.chat.chatMessage.repository.ChatMessageRepository;
 import com.ll.hereispaw.domain.chat.chatRoom.dto.ChatRoomDto;
 import com.ll.hereispaw.domain.chat.chatRoom.entity.ChatRoom;
 import com.ll.hereispaw.domain.chat.chatRoom.repository.ChatRoomRepository;
-import com.ll.hereispaw.domain.member.member.entity.Member;
-import com.ll.hereispaw.domain.member.member.repository.MemberRepository;
+import com.ll.hereispaw.domain.member.dto.MemberDto;
+import com.ll.hereispaw.domain.member.service.MemberServiceClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,18 +20,24 @@ import java.util.stream.Collectors;
 public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
-    private final MemberRepository memberRepository;
+//    private final MemberRepository memberRepository;
+    private final MemberServiceClient memberServiceClient;
     private final ChatMessageRepository chatMessageRepository;
 
     //채팅방 생성
-    public ChatRoom createRoom(Member chatUser,Long targetUserId){
-        Member targetUser = memberRepository.findById(targetUserId).orElse(null);
+    public ChatRoom createRoom(MemberDto chatUser,Long targetUserId){
+//        Member targetUser = memberServiceClient.findById(targetUserId).orElse(null);
+        MemberDto targetUser = memberServiceClient.getMemberById(targetUserId);
         if (targetUser == null) {
             throw new RuntimeException("상대방 사용자를 찾을 수 없습니다.");
         }
         ChatRoom chatRoom = ChatRoom.builder()
-                .chatUser(chatUser)
-                .targetUser(targetUser)
+                .chatUserId(chatUser.getId())
+                .chatUserNickname(chatUser.getNickname())
+                .chatUserUrl(chatUser.getAvatar())
+                .targetUserId(targetUser.getId())
+                .targetUserNickname(targetUser.getNickname())
+                .targetUserUrl(targetUser.getAvatar())
                 .createDate(LocalDateTime.now())
                 //.roomState()
                 .build();
@@ -52,22 +57,23 @@ public class ChatRoomService {
     }
 
     //사용자간의 채팅방 조회 후 생성 또는 참여
-    public ChatRoom createRoomOrView(Member chatUser, Long targetUserId) {
+    public ChatRoom createRoomOrView(MemberDto chatUser, Long targetUserId) {
         // 상대방 조회 람다 연습
-        Member targetUser = memberRepository.findById(targetUserId)
-                .orElseThrow(() -> new RuntimeException("상대방 사용자를 찾을 수 없습니다."));
+//        Member targetUser = memberRepository.findById(targetUserId)
+                MemberDto targetUser = memberServiceClient.getMemberById(targetUserId);
+//                .orElseThrow(() -> new RuntimeException("상대방 사용자를 찾을 수 없습니다."));
 
-        Optional<ChatRoom> existingRoom = chatRoomRepository.findByRoom(chatUser, targetUser, targetUser, chatUser);
+        Optional<ChatRoom> existingRoom = chatRoomRepository.findByRoom(chatUser.getId(), targetUser.getId());
 
         // 존재하는 채팅방 조회 및 상태 확인
         if (existingRoom.isPresent() && existingRoom.get().getRoomState() != 3) {
             ChatRoom room = existingRoom.get();
 
             // 사용자가 이전에 나갔던 경우 다시 참여시 방 상태 0으로 만듬
-            if (room.getChatUser().getId().equals(chatUser.getId()) && room.getRoomState() == 1) {
+            if (room.getChatUserId().equals(chatUser.getId()) && room.getRoomState() == 1) {
                 room.setRoomState(0);
                 chatRoomRepository.save(room);
-            } else if (room.getTargetUser().getId().equals(chatUser.getId()) && room.getRoomState() == 2) {
+            } else if (room.getTargetUserId().equals(chatUser.getId()) && room.getRoomState() == 2) {
                 room.setRoomState(0);
                 chatRoomRepository.save(room);
             }
@@ -80,7 +86,7 @@ public class ChatRoomService {
     }
 
     //안 읽은 메시지 수를 포함한 채팅방 목록 조회
-    public List<ChatRoomDto> roomListWithUnreadCount(Member member) {
+    public List<ChatRoomDto> roomListWithUnreadCount(MemberDto member) {
         List<ChatRoom> chatRooms = roomList(member);
         
         return chatRooms.stream()
@@ -92,28 +98,28 @@ public class ChatRoomService {
     }
 
     //특정 채팅방의 안 읽은 메시지 개수 계산
-    private long countUnreadMessages(ChatRoom chatRoom, Member member) {
+    private long countUnreadMessages(ChatRoom chatRoom, MemberDto member) {
         // 채팅방에서 현재 사용자가 수신자인 메시지 중 읽지 않은 메시지 수 반환
         return chatRoom.getChatMessages().stream()
-                .filter(msg -> !msg.getMember().equals(member) && !msg.isReadByMember(member))
+                .filter(msg -> !msg.getMemberId().equals(member.getId()) && !msg.isReadByMember(member.getId()))
                 .count();
     }
 
     //참여된 채팅방 목록 조회
-    public List<ChatRoom> roomList(Member member) {
-        List<ChatRoom> allRooms = chatRoomRepository.findByRoomList(member, member);
+    public List<ChatRoom> roomList(MemberDto member) {
+        List<ChatRoom> allRooms = chatRoomRepository.findByRoomList(member.getId(), member.getId());
         List<ChatRoom> filteredRooms = new ArrayList<>();
 
         for (ChatRoom room : allRooms) {
             //지역 변수 재활당 코드 shouldInclude
             boolean shouldInclude = false;
 
-            if (room.getChatUser().getId().equals(member.getId())) {
+            if (room.getChatUserId().equals(member.getId())) {
                 // chatUser인 경우 roomState가 0 또는 2인 채팅방만 표시
                 if (room.getRoomState() == 0 || room.getRoomState() == 2) {
                     shouldInclude = true;
                 }
-            } else if (room.getTargetUser().getId().equals(member.getId())) {
+            } else if (room.getTargetUserId().equals(member.getId())) {
                 // targetUser인 경우 roomState가 0 또는 1인 채팅방만 표시
                 if (room.getRoomState() == 0 || room.getRoomState() == 1) {
                     shouldInclude = true;
@@ -129,12 +135,12 @@ public class ChatRoomService {
     }
 
     //채팅방 나가기
-    public void leaveRoom(Long roomId, Member member){
+    public void leaveRoom(Long roomId, MemberDto member){
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다."));
         //맴버의 객체를 비교하기 때문에 equals 사용
         // chatUser가 나가는 경우
-        if(chatRoom.getChatUser().getId().equals(member.getId())){
+        if(chatRoom.getChatUserId().equals(member.getId())){
             if (chatRoom.getRoomState() == 2) {
                 // targetUser가 나가서 방 상태가 2이면 3
                 chatRoom.setRoomState(3);
@@ -143,7 +149,7 @@ public class ChatRoomService {
                 chatRoom.setRoomState(1);
             }
             // targetUser가 나가는 경우
-        } else if (chatRoom.getTargetUser().getId().equals(member.getId())) {
+        } else if (chatRoom.getTargetUserId().equals(member.getId())) {
             if (chatRoom.getRoomState() == 1) {
                 // chatUser가 나가서 방 상태가 1이면 3
                 chatRoom.setRoomState(3);

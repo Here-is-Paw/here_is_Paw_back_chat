@@ -1,7 +1,7 @@
 package com.ll.hereispaw.domain.chat.chatMessage.dto;
 
 import com.ll.hereispaw.domain.chat.chatMessage.entity.ChatMessage;
-import com.ll.hereispaw.domain.member.member.entity.Member;
+import com.ll.hereispaw.domain.member.dto.MemberDto;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -14,10 +14,10 @@ public class ChatMessageResponseDto {
     private String content;
     private LocalDateTime createdDate;
 
-    public ChatMessageResponseDto(ChatMessage chatMessage, Member loginUser) {
-        this.memberId = chatMessage.getMember().getId();
+    public ChatMessageResponseDto(ChatMessage chatMessage, MemberDto loginUser) {
+        this.memberId = chatMessage.getMemberId();
         this.chatMessageId = chatMessage.getId();
-        this.memberNickname = chatMessage.getMember().equals(loginUser) ? "me" : chatMessage.getMember().getNickname();
+        this.memberNickname = chatMessage.getMemberId().equals(loginUser.getId()) ? "me" : chatMessage.getMemberNickname();
         this.content = chatMessage.getContent();
         this.createdDate = chatMessage.getCreateDate();
     }

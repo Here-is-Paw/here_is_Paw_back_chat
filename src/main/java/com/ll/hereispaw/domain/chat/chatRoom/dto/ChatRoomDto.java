@@ -3,7 +3,7 @@ package com.ll.hereispaw.domain.chat.chatRoom.dto;
 import com.ll.hereispaw.domain.chat.chatMessage.dto.ChatMessageDto;
 import com.ll.hereispaw.domain.chat.chatMessage.entity.ChatMessage;
 import com.ll.hereispaw.domain.chat.chatRoom.entity.ChatRoom;
-import com.ll.hereispaw.domain.member.member.entity.Member;
+import com.ll.hereispaw.domain.member.dto.MemberDto;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -55,20 +55,20 @@ public class ChatRoomDto {
         //this.chatUserNickname = chatUser.getNickname();
 
         //if (chatRoom.getTargetUser() != null) 보류
-        this.chatUserId = chatRoom.getChatUser().getId();
-        this.chatUserNickname = chatRoom.getChatUser().getNickname();
-        this.chatUserImageUrl = chatRoom.getChatUser().getAvatar();
+        this.chatUserId = chatRoom.getChatUserId();
+        this.chatUserNickname = chatRoom.getChatUserNickname();
+        this.chatUserImageUrl = chatRoom.getChatUserUrl();
 
         //if (chatRoom.getTargetUser() != null) 보류
-        this.targetUserId = chatRoom.getTargetUser().getId();
-        this.targetUserNickname = chatRoom.getTargetUser().getNickname();
-        this.targetUserImageUrl = chatRoom.getChatUser().getAvatar();
+        this.targetUserId = chatRoom.getTargetUserId();
+        this.targetUserNickname = chatRoom.getTargetUserNickname();
+        this.targetUserImageUrl = chatRoom.getTargetUserUrl();
         
         // 기본값으로 0 설정 (실제로는 서비스에서 설정됨)
         this.unreadMessageCount = 0;
     }
     
-    public ChatRoomDto(ChatRoom chatRoom, Member currentUser, long unreadCount){
+    public ChatRoomDto(ChatRoom chatRoom, MemberDto currentUser, long unreadCount){
         this(chatRoom);
         this.unreadMessageCount = unreadCount;
     }

@@ -1,5 +1,5 @@
 server:
-  port: 8090
+  port: 8095
 spring:
   output:
     ansi:
@@ -12,34 +12,15 @@ spring:
       enabled: true
       max-file-size: 50MB   # 개별 파일 최대 크기
       max-request-size: 100MB
-  security:
-    oauth2:
-      client:
-        registration:
-          kakao:
-            scope:
-              - profile_nickname
-              - profile_image
-              - account_email
-            redirect-uri: "${custom.site.backUrl}/{action}/oauth2/code/{registrationId}"
-            authorization-grant-type: authorization_code
-            client-name: Kakao    # 클라이언트 이름
-        provider:
-          kakao:
-            authorization-uri: https://kauth.kakao.com/oauth/authorize
-            token-uri: https://kauth.kakao.com/oauth/token
-            user-info-uri: https://kapi.kakao.com/v2/user/me    # 사용자 정보 조회 URI
-            user-name-attribute: id    # 사용자 정보에서 사용자 이름에 해당하는 속성
   kafka:
-#    bootstrap-servers: 43.203.223.85:19092
-    bootstrap-servers: localhost:19092
+    bootstrap-servers: 43.203.223.85:19092
     producer:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-#      properties:
-#        spring.json.trusted.packages: com.ll.hereispaw.domain.noti.dto.kafka
-#        spring.json.use.type.headers: false
+      properties:
+        spring.json.trusted.packages: com.ll.hereispaw.domain.noti.dto.kafka
+        spring.json.use.type.headers: false
 logging:
   level:
     root: info

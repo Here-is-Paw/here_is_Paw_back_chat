@@ -1,7 +1,6 @@
 package com.ll.hereispaw.domain.chat.chatMessage.dto;
 
 import com.ll.hereispaw.domain.chat.chatMessage.entity.ChatMessage;
-import com.ll.hereispaw.domain.member.member.entity.Member;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -35,8 +34,8 @@ public class ChatMessageDto {
         this.memberNickname = member.getNickname();*/
 
         //chatMessage를 통해서 따로 하나씩 호출하는 방식
-        this.memberId = chatMessage.getMember().getId();
-        this.memberNickname = chatMessage.getMember().getNickname();
+        this.memberId = chatMessage.getMemberId();
+        this.memberNickname = chatMessage.getMemberNickname();
         this.isChatUserRead = chatMessage.isChatUserRead();
         this.isTargetUserRead = chatMessage.isTargetUserRead();
     }

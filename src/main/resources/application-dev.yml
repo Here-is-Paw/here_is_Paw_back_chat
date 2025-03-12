@@ -1,5 +1,5 @@
 server:
-  port: 8090
+  port: 8095
 spring:
   hikari:
     connection-init-sql: "SET search_path TO public, topology, tiger;"
@@ -16,3 +16,16 @@ spring:
           lob:
             non_contextual_creation: true
     open-in-view: false # OSIV 설정 끄기
+services:
+  auth:
+    url: http://localhost:8090/ # 인증 서비스 URL
+  post:
+    url: http://localhost:8093/  # 게시글 서비스 URL
+  chat:
+    url: http://localhost:8095/  # 채팅 서비스 URL
+  noti:
+    url: http://localhost:8097/  # 알림 서비스 URL
+  payment:
+    url: http://localhost:8099/ # 결제 서비스 URL
+  gateway:
+    url: http://localhost:8001/
