@@ -9,12 +9,12 @@ from typing import Dict, Optional
 
 class ServiceManager:
     # 초기화 함수
-    def __init__(self, socat_port: int = 8081, sleep_duration: int = 3) -> None:
+    def __init__(self, socat_port: int = 8095, sleep_duration: int = 3) -> None:
         self.socat_port: int = socat_port
         self.sleep_duration: int = sleep_duration
         self.services: Dict[str, int] = {
-            'here_is_paw_1': 8082,
-            'here_is_paw_2': 8083
+            'here_is_paw_chat_1': 8096,
+            'here_is_paw_chat_2': 8097
         }
         self.current_name: Optional[str] = None
         self.current_port: Optional[int] = None
@@ -26,7 +26,7 @@ class ServiceManager:
         cmd: str = f"ps aux | grep 'socat -t0 TCP-LISTEN:{self.socat_port}' | grep -v grep | awk '{{print $NF}}'"
         current_service: str = subprocess.getoutput(cmd)
         if not current_service:
-            self.current_name, self.current_port = 'here_is_paw_2', self.services['here_is_paw_2']
+            self.current_name, self.current_port = 'here_is_paw_chat_2', self.services['here_is_paw_chat_2']
         else:
             self.current_port = int(current_service.split(':')[-1])
             self.current_name = next((name for name, port in self.services.items() if port == self.current_port), None)
@@ -43,11 +43,37 @@ class ServiceManager:
         os.system(f"docker stop {name} 2> /dev/null")
         os.system(f"docker rm -f {name} 2> /dev/null")
 
+        # 명령 실행 및 로깅 헬퍼 함수
+    def _run_command(self, cmd: str, log_output: bool = True) -> str:
+        output = subprocess.getoutput(cmd)
+        return output
+
+    def _cleanup_dangling_images(self) -> None:
+        # 특정 이미지 중 <none> 태그가 된 이미지만 정리
+
+        # 먼저 이미지 목록 확인
+        cmd_list = "docker images | grep '.*/here-is-paw/here_is_paw_chat' | grep '<none>'"
+        images = self._run_command(cmd_list)
+
+        if not images:
+            print("정리할 이미지가 없습니다.")
+            return
+
+        # 이미지 정리
+        cmd_remove = "docker images | grep '.*/here-is-paw/here_is_paw_chat' | grep '<none>' | awk '{print $3}' | xargs -r docker rmi"
+        output = self._run_command(cmd_remove)
+        print("이미지 정리 완료")
+
+        # 정리 후 이미지 목록 다시 확인
+        remaining = self._run_command(cmd_list)
+        if remaining:
+            print("일부 이미지가 정리되지 않았습니다.")
+
     # Docker 컨테이너를 실행하는 함수
     def _run_container(self, name: str, port: int) -> None:
         os.system(
-            f"docker run -d --name={name} --restart unless-stopped -p {port}:8090 -e TZ=Asia/Seoul -v /dockerProjects/here_is_paw/volumes/gen:/gen --pull always ghcr.io/here-is-paw/here_is_paw")
-##
+            f"docker run -d --name={name} --restart unless-stopped -p {port}:8095 -e TZ=Asia/Seoul -v /dockerProjects/here_is_paw_msa/chat/volumes/gen:/gen --pull always ghcr.io/here-is-paw/here_is_paw_chat")
+    ##
     def _switch_port(self) -> None:
         # Socat 포트를 전환하는 함수
         cmd: str = f"ps aux | grep 'socat -t0 TCP-LISTEN:{self.socat_port}' | grep -v grep | awk '{{print $2}}'"
@@ -79,6 +105,7 @@ class ServiceManager:
         self._find_next_service()
 
         self._remove_container(self.next_name)
+        self._cleanup_dangling_images()
         self._run_container(self.next_name, self.next_port)
 
         # 새 서비스가 'UP' 상태가 될 때까지 기다림

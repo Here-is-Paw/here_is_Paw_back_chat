@@ -12,15 +12,6 @@ spring:
       enabled: true
       max-file-size: 50MB   # 개별 파일 최대 크기
       max-request-size: 100MB
-  kafka:
-    bootstrap-servers: 43.203.223.85:19092
-    producer:
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    consumer:
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: com.ll.hereispaw.domain.noti.dto.kafka
-        spring.json.use.type.headers: false
 logging:
   level:
     root: info
@@ -31,17 +22,3 @@ springdoc:
     path: /swagger-ui.html  # Swagger UI 경로
   api-docs:
     path: /api-docs        # API 문서 경로
-custom:
-  dev:
-    cookieDomain: localhost
-    frontUrl: "http://${custom.dev.cookieDomain}:5173"
-    backUrl: "http://${custom.dev.cookieDomain}:${server.port}"
-  prod:
-    cookieDomain: pawpaw.kknaks.site
-    frontUrl: "https://www.${custom.prod.cookieDomain}"
-    backUrl: "https://api.${custom.prod.cookieDomain}"
-  site:
-    name: "PawPaw"
-    cookieDomain: "${custom.dev.cookieDomain}"
-    frontUrl: "${custom.dev.frontUrl}"
-    backUrl: "${custom.dev.backUrl}"

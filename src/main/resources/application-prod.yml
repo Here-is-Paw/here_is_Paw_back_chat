@@ -1,24 +1,6 @@
 server:
   port: 8095
 spring:
-  security:
-    oauth2:
-      client:
-        registration:
-          kakao:
-            scope:
-              - profile_nickname
-              - profile_image
-              - account_email
-            redirect-uri: "${custom.site.backUrl}/login/oauth2/code/kakao"
-            authorization-grant-type: authorization_code
-            client-name: Kakao    # 클라이언트 이름
-        provider:
-          kakao:
-            authorization-uri: https://kauth.kakao.com/oauth/authorize
-            token-uri: https://kauth.kakao.com/oauth/token
-            user-info-uri: https://kapi.kakao.com/v2/user/me    # 사용자 정보 조회 URI
-            user-name-attribute: id    # 사용자 정보에서 사용자 이름에 해당하는 속성
   jpa:
     database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG10Dialect
     hibernate:
@@ -40,14 +22,18 @@ springdoc:
     path: /swagger-ui.html  # Swagger UI 경로
   api-docs:
     path: /api-docs        # API 문서 경로
-
-custom:
-  prod:
-    cookieDomain: pawpaw.kknaks.site
-    frontUrl: "https://www.${custom.prod.cookieDomain}"
-    backUrl: "https://api.${custom.prod.cookieDomain}"
-  site:
-    name: "pawpaw"
-    cookieDomain: "${custom.prod.cookieDomain}"
-    frontUrl: "${custom.prod.frontUrl}"
-    backUrl: "${custom.prod.backUrl}"
+services:
+  auth:
+    url: http://110.165.16.61:8090 # 인증 서비스 URL
+  post:
+    url: http://110.165.16.61:8093  # 게시글 서비스 URL
+  chat:
+    url: http://110.165.16.61:8095  # 채팅 서비스 URL
+  noti:
+    url: http://110.165.16.61:8097  # 알림 서비스 URL
+  payment:
+    url: http://110.165.16.61:8100 # 결제 서비스 URL
+  search:
+    url: http://110.165.16.61:8103  # 검색 서비스 URL
+  carecenter:
+    url: http://110.165.16.61:8105 # 병원 서비스 URL
