@@ -1,5 +1,7 @@
 package com.ll.hereispaw.global.webSocket;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.stereotype.Component;
@@ -13,15 +15,17 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Component
 @Slf4j
 public class SseEmitters {
-    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+    private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
+//    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
     // 새로운 SSE 연결을 추가하고 관련 콜백을 설정하는 메서드
-    public SseEmitter add(SseEmitter emitter) {
-        this.emitters.add(emitter);
+    public SseEmitter add(Long userId, SseEmitter emitter) {
+        String connectionKey = String.valueOf(userId);
+        this.emitters.put(connectionKey, emitter);
 
         // 클라이언트와의 연결이 완료되면 컬렉션에서 제거하는 콜백
         emitter.onCompletion(() -> {
-            this.emitters.remove(emitter);
+            this.emitters.remove(connectionKey);
         });
 
         // 연결이 타임아웃되면 완료 처리하는 콜백
@@ -39,20 +43,23 @@ public class SseEmitters {
 
     // 모든 연결된 클라이언트들에게 이벤트를 전송하는 메서드
     public void noti(String eventName, Map<String, Object> data) {
-        // 모든 emitter에 대해 반복하며 이벤트 전송
-        emitters.forEach(emitter -> {
+
+        List<Map.Entry<String, SseEmitter>> userEmitters = emitters.entrySet().stream()
+            .filter(entry -> entry.getKey().startsWith("userId"))
+            .collect(Collectors.toList());
+
+        for (Map.Entry<String, SseEmitter> entry : userEmitters) {
             try {
-                emitter.send(
-                        SseEmitter.event()
-                                .name(eventName)    // 이벤트 이름 설정
-                                .data(data)         // 전송할 데이터 설정
-                );
-            } catch (ClientAbortException e) {
-                // 클라이언트가 연결을 강제로 종료한 경우 무시
+                entry.getValue().send(SseEmitter.event()
+                    .name(eventName)
+                    .data(data));
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                log.debug("Error sending notification to connection: {}", entry.getKey(), e);
+                emitters.remove(entry.getKey());
+                entry.getValue().complete();
+                log.info("Client connection closed, notification stored in repository for later delivery");
             }
-        });
+        }
     }
 }
 

@@ -77,8 +77,10 @@ public class ApiV1ChatRoomController {
     
     // SSE 연결 엔드포인트
     @GetMapping(value = "/sse/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter connect() {
-        return sseEmitters.add(new SseEmitter(60 * 1000L * 60)); // 60분 유지
+    public SseEmitter connect(
+        @RequestParam("userId") Long userId
+    ) {
+        return sseEmitters.add(userId, new SseEmitter(60 * 1000L * 60)); // 60분 유지
     }
     
     // 안 읽은 메시지 상태 업데이트를 위한 SSE 알림 메서드

@@ -97,7 +97,7 @@ dependencies {
     implementation("com.meilisearch.sdk:meilisearch-java:0.14.2")
 
     //docker-compose
-    developmentOnly("org.springframework.boot:spring-boot-docker-compose")
+//    developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 
 }
 
