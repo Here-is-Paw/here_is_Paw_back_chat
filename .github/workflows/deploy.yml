@@ -92,7 +92,7 @@ jobs:
       - name: SSH to server
         uses: appleboy/ssh-action@master
         with:
-          host: 110.165.16.61
+          host: 210.113.34.187
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
